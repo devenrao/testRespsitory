@@ -1,6 +1,6 @@
 cxx = meson.get_compiler('cpp')
 
-backend_switch_deps = [
+pdbg_deps = [
     cxx.find_library('pdbg'),
     cxx.find_library('fdt'),
     cxx.find_library('ekb'),
@@ -9,6 +9,12 @@ backend_switch_deps = [
 executable(
     'backend_switch',
     'backend_switch.cpp',
-    dependencies: backend_switch_deps,
+    dependencies: pdbg_deps,
     install: true,
 )
+executable(
+    'print_proc_type',
+    'print_proc_type.cpp',
+    dependencies: pdbg_deps,
+    install: true,
+)    
