@@ -10,3 +10,4 @@ project(
 
 cpp = meson.get_compiler('cpp')
 subdir('pdbg')
+subdir('dump')
