@@ -1,11 +1,23 @@
 cxx = meson.get_compiler('cpp')
 
-coroutine_test_deps = [
-]
+sdbusplus = dependency(
+    'sdbusplus',
+    fallback: [
+        'sdbusplus',
+        'sdbusplus_dep'
+    ],  
+)
+
+systemd = dependency('systemd')
 
 executable(
-    'coroutine_test',
-    'coroutine_test.cpp',
-    dependencies: coroutine_test_deps,
-    install: true,
+    'coroutine_example',
+    'coroutine_example.cpp',
+    dependencies: [ sdbusplus, systemd ],
+)
+
+executable(
+    'createpel',
+    'createpel.cpp',
+    dependencies: [ sdbusplus, systemd ],
 )
