@@ -4,17 +4,11 @@ pdbg_deps = [
     cxx.find_library('pdbg'),
     cxx.find_library('fdt'),
     cxx.find_library('ekb'),
+    cxx.find_library('dt-api')
 ]
-
 executable(
-    'backend_switch',
-    'backend_switch.cpp',
+    'proc_path',
+    'print_proc_path.cpp',
     dependencies: pdbg_deps,
     install: true,
 )
-executable(
-    'print_proc_type',
-    'print_proc_type.cpp',
-    dependencies: pdbg_deps,
-    install: true,
-)    

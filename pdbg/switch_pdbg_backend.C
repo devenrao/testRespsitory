@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include <attributes_info.H>
-#include <ekb/chips/p10/procedures/hwp/perv/p10_extract_sbe_rc.H>
-#include <ekb/hwpf/fapi2/include/return_code_defs.H>
+//#include <ekb/chips/p10/procedures/hwp/perv/p10_extract_sbe_rc.H>
+//#include <ekb/hwpf/fapi2/include/return_code_defs.H>
 
 void pdbgLogCallback(int, const char* fmt, va_list ap)
 {

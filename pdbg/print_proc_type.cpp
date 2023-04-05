@@ -32,6 +32,7 @@ pdbg_target* getPibTrgt(pdbg_target* i_procTrgt)
 
     // Return the pib target.
     pdbg_target* pibTrgt = pdbg_target_from_path(nullptr, path);
+    std::cout << "path is " << path << std::endl;
 
     return pibTrgt;
 }
@@ -55,12 +56,6 @@ int main()
         return 0;
     }
 
-    // initially set the pdbg backend to sbefifo
-    std::cout << "***Start with SBEFIFO as backend ******" << std::endl;
-    if (!pdbg_set_backend(PDBG_BACKEND_SBEFIFO, NULL)) 
-    {
-        std::cout << "Failed to set pdbg backend to fifo" << std::endl;
-    }
 
     //initialize the targeting system 
     if (!pdbg_targets_init(NULL))
@@ -79,5 +74,16 @@ int main()
         auto index = std::to_string(pdbg_target_index(procTarget));
         getPibTrgt(procTarget);
     }
+
+    const char* myproc = "/proc0/pib";
+    struct pdbg_target* pdbgTgt = pdbg_target_from_path(NULL, myproc);
+    if(pdbgTgt == nullptr)
+    {
+        std::cerr << "Could not find pdbg target for path " << myproc << std::endl;
+        return 0;
+    }
+    std::cout << "target name is " << pdbg_target_name(pdbgTgt) << std::endl;
+    std::cout << "target path is " << pdbg_target_path(pdbgTgt) << std::endl;
+
     return 1;
 }
