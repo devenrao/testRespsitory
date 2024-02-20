@@ -24,8 +24,7 @@ phosphor_logging = dependency(
     )
 
 executable(
-    'sbescom',
-    'sbescom.cpp',
+    'createodypel',
+    'createodypel.cpp',
     dependencies: [ sdbusplus, pdbg_deps, systemd, phosphor_logging ],
-	install: true,
 )

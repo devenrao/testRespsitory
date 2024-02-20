@@ -2,7 +2,7 @@
 #include <vector>
 #include <string.h>
 #include <attributes_info.H>
-#include <libphal.H> 
+#include <libphal.H>
 #include <cstring>
 
 extern "C"
@@ -36,7 +36,7 @@ static int print_target_data(struct pdbg_target *target)
         std::cout << "pdbg target name is " << targetname << std::endl;
     }
     uint8_t type;
-    if (pdbg_target_get_attribute(target, "ATTR_TYPE", 1, 1, &type)) 
+    if (pdbg_target_get_attribute(target, "ATTR_TYPE", 1, 1, &type))
     {
         std::cout << "target type " <<  (short)type << std::endl;
     }
@@ -66,20 +66,10 @@ static int print_target_data(struct pdbg_target *target)
     /* Enable the port in the upstream control register */
     if (pdbg_target_u32_property(target, "port", &port)) {
 	    printf("pdbg target port is 0x%x \n", port);
-    }    
+    }
     return 0;
 }
 
-void captureFFDC(struct pdbg_target *ocmb)
-{
-	
-}
-
-/** @struct DumpPtr
-* @brief a structure holding the data pointer
-* @details This is a RAII container for the dump data
-* returned by the SBE
-*/
 struct DumpDataPtr
 {
 public:
@@ -107,6 +97,22 @@ private:
   /** The pointer to the data */
   uint8_t* dataPtr = nullptr;
 };
+
+struct pdbg_target *getPibTarget(struct pdbg_target *proc)
+{
+    char path[16];
+    sprintf(path, "/proc%d/pib", pdbg_target_index(proc));
+    struct pdbg_target *pib = pdbg_target_from_path(nullptr, path);
+    if (pib == nullptr) {
+        std::cout << "error to get pib target" << std::endl;
+        return NULL;
+    }
+    if (pdbg_target_probe(pib) != PDBG_TARGET_ENABLED) {
+        std::cout << "error to probe pib target" << std::endl;
+    }
+    return pib;
+}
+
 int main()
 {
     constexpr auto devtree = "/var/lib/phosphor-software-manager/pnor/rw/DEVTREE";
@@ -126,9 +132,9 @@ int main()
         return 0;
     }
 
-    //initialize the targeting system 
+    //initialize the targeting system
     if (!pdbg_targets_init(NULL))
-    {   
+    {
         std::cerr << "pdbg_targets_init failed" << std::endl;
         return 0;
     }
@@ -137,54 +143,54 @@ int main()
     pdbg_set_loglevel(PDBG_DEBUG);
     pdbg_set_logfunc(pdbgLogCallback);
 
-    constexpr uint16_t ODYSSEY_CHIP_ID = 0x60C0;        
+    struct pdbg_target *proc;
+    pdbg_for_each_target("proc", NULL, proc)
+    {
+        if (pdbg_target_probe(proc) != PDBG_TARGET_ENABLED)
+        {
+            std::cout << "proc chip not enabled " << std::endl;
+            return -1;
+        }
+        struct pdbg_target *pib = getPibTarget(proc);
+        std::cout << "sbedump - before calling sbe_ffdc_get " << std::endl;
+        DumpDataPtr ffdcPtr;
+        uint32_t status = 0;
+        uint32_t ffdc_len = 0;
+        int ret = sbe_ffdc_get(pib, &status, ffdcPtr.getPtr(), &ffdc_len);
+        if(ret != 0){
+            std::cout << "failed to get ffdc data " << ret << std::endl;
+        } else {
+            std::cout << "ffdc data status is " << status << " ffdc_len " << ffdc_len << std::endl;
+        }
+        std::cout << "sbedump - after calling sbe_ffdc_get " << std::endl;
+        break;
+
+    }
     struct pdbg_target *ocmb;
     pdbg_for_each_target("ocmb", NULL, ocmb)
     {
-        uint32_t chipId = 0;
-        pdbg_target_get_attribute(ocmb, "ATTR_CHIP_ID", 4, 1, &chipId);
-    	uint32_t proc = pdbg_target_index(pdbg_target_parent("proc", ocmb));
-	    uint64_t val = 0;
-	    if(chipId == ODYSSEY_CHIP_ID)
+	    if(is_ody_ocmb_chip(ocmb))
 	    {
-			// Clock state requested
-			// Collect the dump with clocks on
-			constexpr int SBE_CLOCK_ON = 0x1;
-			//constexpr auto SBE_CLOCK_OFF = 0x2;	    
-			pdbg_target_probe(ocmb);
-
-			if (pdbg_target_status(ocmb) != PDBG_TARGET_ENABLED)
+			if (pdbg_target_probe(ocmb) != PDBG_TARGET_ENABLED)
 			{
-				std::cout << "ocmb chip not enabled " << std::endl;	
+				std::cout << "ocmb chip not enabled " << std::endl;
 				return -1;
 			}
-			/*
-			DumpDataPtr dataPtr;
-			uint32_t len = 0;
-			constexpr int SBE_DUMP_TYPE_HOSTBOOT = 0x5;
-			std::cout << "before calling get_ody_pib_target " << std::endl; 
-			std::cout << "after calling get_ody_pib_target " << std::endl;			
-			if (sbe_dump(ocmb, SBE_DUMP_TYPE_HOSTBOOT, SBE_CLOCK_ON, 0, dataPtr.getPtr(), &len)) {
-				std::cout << "failed to collect sbe dump " << std::endl;
-				return 0;
-			}
-			else
-			{
-				std::cout << "sucessfully collected dump data len is " << len << std::endl;
-		    }	
-			*/
+
+            std::cout << "sbedump - before calling sbe_ffdc_get " << std::endl;
 			DumpDataPtr ffdcPtr;
 			uint32_t status = 0;
 			uint32_t ffdc_len = 0;
-			int ret;
-			ret = sbe_ffdc_get(ocmb, &status, ffdcPtr.getPtr(), &ffdc_len);
+			int ret = sbe_ffdc_get(ocmb, &status, ffdcPtr.getPtr(), &ffdc_len);
 			if(ret != 0){
 				std::cout << "failed to get ffdc data " << ret << std::endl;
 			} else {
 				std::cout << "ffdc data status is " << status << " ffdc_len " << ffdc_len << std::endl;
 			}
+            std::cout << "sbedump - after calling sbe_ffdc_get " << std::endl;
 			break;
 	    }
     }
     return 0;
 }
+

@@ -27,4 +27,5 @@ executable(
     'sbecfam',
     'sbecfam.cpp',
     dependencies: [ sdbusplus, pdbg_deps, systemd, phosphor_logging ],
+	install:true,
 )

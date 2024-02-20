@@ -27,4 +27,5 @@ executable(
     'sbedump',
     'sbedump.cpp',
     dependencies: [ sdbusplus, pdbg_deps, systemd, phosphor_logging ],
+	install:true,
 )
