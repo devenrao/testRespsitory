@@ -22,7 +22,7 @@ void pdbgLogCallback(int, const char* fmt, va_list ap)
     std::cout << "PDBG:" << logstr << std::endl;
 }
 
-static int print_target_data(struct pdbg_target *target)
+static int print_target_data(struct pdbg_target *target, void*)
 {
     std::cout << "--------------------------------------------" << std::endl;
     const char *classname = pdbg_target_class_name(target);
@@ -98,46 +98,6 @@ int main()
     // set log level and callback function
     pdbg_set_loglevel(PDBG_DEBUG);
     pdbg_set_logfunc(pdbgLogCallback);
-
-    constexpr uint16_t ODYSSEY_CHIP_ID = 0x60C0;        
-    struct pdbg_target *ocmb;
-    int count = 0;
-    pdbg_for_each_target("ocmb", NULL, ocmb)
-    {
-        uint32_t chipId = 0;
-        pdbg_target_get_attribute(ocmb, "ATTR_CHIP_ID", 4, 1, &chipId);
-        uint32_t ocmb_index = pdbg_target_index(ocmb);
-		uint32_t fapipos = 0;
-        pdbg_target_get_attribute(ocmb, "ATTR_FAPI_POS", 4, 1, &fapipos);
-	/*
-        if(chipId == ODYSSEY_CHIP_ID)
-        {
-			std::cout << "calling probe ocmb target index " << pdbg_target_index(ocmb) << std::endl;
-		    if(pdbg_target_probe(ocmb) != PDBG_TARGET_ENABLED)
-		    {
-		        std::cout << "ocmb target probe failed and is not enabled " << std::endl;
-		        return -1;
-		    }
-            uint64_t origval = 0;
-            uint64_t modval = 0;
-            uint32_t addr = 0xc0002040;
-            int ret = ocmb_getscom(ocmb, addr, &origval);
-            std::cout << "odyssesy getscom " << std::hex << " index=0x" << pdbg_target_index(ocmb) << " fapipos=0x" << fapipos
-                << std::hex << " addr=" << addr << " value "  << "0x" << origval  << " ret " << ret << std::endl;  
-        }
-        else
-       	*/ 
-        {
-            uint64_t origval = 0;
-            uint64_t modval = 0;
-            //uint32_t addr = 0x20b080;
-            uint32_t addr = 0xc0002040;
-            int ret = ocmb_getscom(ocmb, addr, &origval);
-            std::cout << "ddr4 chip ocmb_getscom " << " ocmb index=" << pdbg_target_index(ocmb)
-                << std::hex << " addr= " << addr << " orig value "  << "0x" << origval  << " ret " << ret << std::endl;  
-            std::cout << "-------------------------------------------------" << std::endl;
-            std::cout << std::endl;
-        }
-    }           
+    pdbg_target_traverse(nullptr, print_target_data, nullptr);
     return 0;
 }
