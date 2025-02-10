@@ -9,4 +9,4 @@ project(
   ])  
 
 cpp = meson.get_compiler('cpp')
-subdir('pdbgtgttrav')
+subdir('p12startcbs')
